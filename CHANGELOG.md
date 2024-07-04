@@ -1,3 +1,7 @@
+
+## 0.0.3
+* Updated support for current WebRTC.
+
 ## 0.0.2
 
 * Minor warnings cleanup to pass static analysis
