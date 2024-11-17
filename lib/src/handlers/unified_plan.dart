@@ -180,7 +180,7 @@ class UnifiedPlan extends HandlerInterface {
   @override
   Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {
     if (_pc == null) {
-      await Future.delayed(const Duration(seconds: 1), () {});
+      await Future.delayed(const Duration(milliseconds: 1500));
     }
     _assertRecvDirection();
 
@@ -252,9 +252,31 @@ class UnifiedPlan extends HandlerInterface {
     // Store in the map.
     _mapMidTransceiver[localId] = transceiver;
 
-    final MediaStream? stream = _pc!
-        .getRemoteStreams()
-        .firstWhereOrNull((e) => e?.id == options.rtpParameters.rtcp!.cname);
+    MediaStream? stream;
+
+    try {
+      // Attempt to retrieve the remote stream
+      stream = _pc!
+          .getRemoteStreams()
+          .firstWhereOrNull((e) => e?.id == options.rtpParameters.rtcp?.cname);
+    } catch (e) {
+      // Log the error
+      // _logger.error('Error in getRemoteStreams: $e');
+
+      // Attempt fallback mechanism
+      final MediaStreamTrack? track = (await _pc!.getReceivers())
+          .firstWhereOrNull((receiver) => receiver.track?.id == options.trackId)
+          ?.track;
+
+      if (track == null) {
+        throw Exception('Track not found for trackId: ${options.trackId}');
+      }
+
+      // Create a new local media stream and add the track
+      stream = await createLocalMediaStream(
+          options.rtpParameters.rtcp?.cname ?? 'default_cname');
+      stream.addTrack(track);
+    }
 
     if (stream == null) {
       throw ('Stream not found');

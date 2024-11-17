@@ -1,6 +1,6 @@
 name: mediasfu_mediasoup_client
 description: "Mediasoup client for Flutter applications - Modified for MediaSFU Support"
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/MediaSFU/mediasfu_mediasoup_client
 
 environment:
