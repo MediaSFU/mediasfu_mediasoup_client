@@ -1,4 +1,7 @@
 
+## 0.0.5
+* Added support for current WebRTC.
+
 ## 0.0.4
 * Bug fix for getRemoteStreams() method.
 

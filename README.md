@@ -23,12 +23,21 @@
 
 MediaSFU offers a cutting-edge streaming experience that empowers users to customize their recordings and engage their audience with high-quality streams. Whether you're a content creator, educator, or business professional, MediaSFU provides the tools you need to elevate your streaming game.
 
+<div style="text-align: center;">
+
+<img src="https://mediasfu.com/images/header_1.jpg" alt="Preview Page" title="Preview Page" style="max-height: 600px;">
+
+</div>
+
 ---
 
 # MediaSFU Mediasoup Client
 
-This is a modified version of [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter) with added support for current WebRTC and fixes for simulcast RID errors.
+This is a modified version of [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter) with added support for current WebRTC and fixes for simulcast RID errors and other issues.
 
 ## Credits
 - Original Repository: [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter)
-- Modified by: MediaSFU
+- Modified and Maintained by: [MediaSFU](https://www.mediasfu.com/)
+
+## Need to Build Fast?
+- Try MediaSFU Community Edition: [MediaSFU CE](https://github.com/MediaSFU/MediaSFUOpen)
