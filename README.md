@@ -39,5 +39,11 @@ This is a modified version of [mediasoup-client-flutter](https://github.com/Blan
 - Original Repository: [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter)
 - Modified and Maintained by: [MediaSFU](https://www.mediasfu.com/)
 
-## Need to Build Fast?
-- Try MediaSFU Community Edition: [MediaSFU CE](https://github.com/MediaSFU/MediaSFUOpen)
+## 🚀 Need to Build Fast?
+- **MediaSFU SDK:** [mediasfu_sdk on pub.dev](https://pub.dev/packages/mediasfu_sdk)  
+- **MediaSFU Community Edition:** [MediaSFU CE](https://github.com/MediaSFU/MediaSFUOpen)  
+
+### ✅ Flutter SDK Setup Guide
+[![Watch the Flutter SDK Setup Guide](http://i.ytimg.com/vi/IzwVEMBQ3p0/hqdefault.jpg)](https://www.youtube.com/watch?v=IzwVEMBQ3p0)  
+🎥 [**Watch the Flutter SDK Setup Guide**](https://youtu.be/IzwVEMBQ3p0)
+
