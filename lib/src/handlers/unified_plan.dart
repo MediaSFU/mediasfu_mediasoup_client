@@ -194,7 +194,7 @@ class UnifiedPlan extends HandlerInterface {
       mid: localId,
       kind: options.kind,
       offerRtpParameters: options.rtpParameters,
-      streamId: options.rtpParameters.rtcp!.cname,
+      streamId: options.rtpParameters.rtcp?.cname ?? 'default_cname',
       trackId: options.trackId,
     );
 

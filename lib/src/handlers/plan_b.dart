@@ -188,7 +188,7 @@ class PlanB extends HandlerInterface {
 
     String localId = options.trackId;
     String mid = RTCRtpMediaTypeExtension.value(options.kind);
-    String streamId = options.rtpParameters.rtcp!.cname;
+    String streamId = options.rtpParameters.rtcp?.cname ?? "default_cname";
 
     _logger.debug(
         'receive() | forcing a random remote streamId to avoid well known bug in native');

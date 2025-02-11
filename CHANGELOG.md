@@ -1,3 +1,5 @@
+## 0.0.7
+* Cname static pass issues fix.
 
 ## 0.0.6
 * Added support for current WebRTC.
