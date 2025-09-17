@@ -15,6 +15,8 @@ class ProducerCodecOptions {
   final int? opusMaxPlaybackRate;
   final int? opusMaxAverageBitrate;
   final int? opusPtime;
+  final int? pcmuPtime;
+  final int? pcmaPtime;
   final int? videoGoogleStartBitrate;
   final int? videoGoogleMaxBitrate;
   final int? videoGoogleMinBitrate;
@@ -26,6 +28,8 @@ class ProducerCodecOptions {
     this.opusMaxPlaybackRate,
     this.opusMaxAverageBitrate,
     this.opusPtime,
+    this.pcmuPtime,
+    this.pcmaPtime,
     this.videoGoogleStartBitrate,
     this.videoGoogleMaxBitrate,
     this.videoGoogleMinBitrate,
@@ -41,6 +45,8 @@ class ProducerCodecOptions {
       if (opusMaxAverageBitrate != null)
         'opusMaxAverageBitrate': opusMaxAverageBitrate,
       if (opusPtime != null) 'opusPtime': opusPtime,
+      if (pcmuPtime != null) 'pcmuPtime': pcmuPtime,
+      if (pcmaPtime != null) 'pcmaPtime': pcmaPtime,
       if (videoGoogleStartBitrate != null)
         'videoGoogleStartBitrate': videoGoogleStartBitrate,
       if (videoGoogleMaxBitrate != null)

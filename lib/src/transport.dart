@@ -663,7 +663,7 @@ class Transport extends EnhancedEventEmitter {
 
   /// Get associated Transport (RTCPeerConnection) stats.
   ///
-  /// @returns {List<StatsReport>}
+  /// Returns a list of StatsReport objects.
   Future<List<StatsReport>> getState() async {
     if (_closed) {
       throw ('closed');

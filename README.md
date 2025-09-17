@@ -55,7 +55,18 @@ MediaSFU offers a cutting-edge streaming experience that empowers users to custo
 
 # MediaSFU Mediasoup Client
 
-This is a modified version of [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter) with added support for current WebRTC and fixes for simulcast RID errors and other issues.
+This is a modified version of [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter) with enhanced WebRTC support, Chrome M140+ compatibility, and comprehensive audio codec support including PCMU/PCMA for telephony integration.
+
+## 🎵 **Audio Codec Support**
+- **Opus:** High-quality, variable bitrate codec for premium audio
+- **PCMU (G.711 μ-law):** Standard telephony codec for North America/Japan
+- **PCMA (G.711 A-law):** Standard telephony codec for Europe/World  
+
+## 🛠️ **Chrome M140+ WebRTC Compatibility**
+- **Chrome M140+ Compatibility Pending for Video:** Full support for latest WebRTC changes pending
+
+## 🔧 **Enhanced Features** 
+- ✅ **PCMU/PCMA Audio Codecs** - G.711 support for telephony integration
 
 ## Credits
 - Original Repository: [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter)

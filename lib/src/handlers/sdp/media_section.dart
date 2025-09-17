@@ -1006,6 +1006,8 @@ class AnswerMediaSection extends MediaSection {
               final int? opusMaxAverageBitrate =
                   codecOptions.opusMaxAverageBitrate;
               final int? opusPtime = codecOptions.opusPtime;
+              final int? pcmuPtime = codecOptions.pcmuPtime;
+              final int? pcmaPtime = codecOptions.pcmaPtime;
               final int? videoGoogleStartBitrate =
                   codecOptions.videoGoogleStartBitrate;
               final int? videoGoogleMaxBitrate =
@@ -1013,23 +1015,27 @@ class AnswerMediaSection extends MediaSection {
               final int? videoGoogleMinBitrate =
                   codecOptions.videoGoogleMinBitrate;
 
-              final RtpCodecParameters? offerCodec =
-                  offerRtpParameters?.codecs.firstWhere(
-                (RtpCodecParameters c) => c.payloadType == codec.payloadType,
-                orElse: () => null as RtpCodecParameters,
-              );
+              RtpCodecParameters? offerCodec;
+              try {
+                offerCodec = offerRtpParameters?.codecs.firstWhere(
+                  (RtpCodecParameters c) => c.payloadType == codec.payloadType,
+                );
+              } catch (e) {
+                offerCodec = null;
+              }
 
-              switch (codec.mimeType.toLowerCase()) {
-                case 'audio/opus':
-                  {
-                    // if (opusStereo != null) {
-                    // offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
-                    offerCodec!.parameters['sprop-stereo'] = opusStereo ?? 0;
-                    // codecParameters['stereo'] = opusStereo ? 1 : 0;
-                    codecParameters['stereo'] = opusStereo ?? 0;
-                    // }
+              if (offerCodec != null) {
+                switch (codec.mimeType.toLowerCase()) {
+                  case 'audio/opus':
+                    {
+                      // if (opusStereo != null) {
+                      // offerCodec.parameters['sprop-stereo'] = opusStereo ? 1 : 0;
+                      offerCodec.parameters['sprop-stereo'] = opusStereo ?? 0;
+                      // codecParameters['stereo'] = opusStereo ? 1 : 0;
+                      codecParameters['stereo'] = opusStereo ?? 0;
+                      // }
 
-                    // if (opusFec != null) {
+                      // if (opusFec != null) {
                     // offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
                     offerCodec.parameters['useinbandfec'] = opusFec ?? 0;
                     // codecParameters['useinbandfec'] = opusFec ? 1 : 0;
@@ -1060,6 +1066,30 @@ class AnswerMediaSection extends MediaSection {
                     break;
                   }
 
+                case 'audio/pcmu':
+                  {
+                    // PCMU (G.711 μ-law) - standard audio codec, 8kHz, 1 channel
+                    // Use PCMU-specific ptime if available, otherwise use general opusPtime
+                    final int? ptimeValue = pcmuPtime ?? opusPtime;
+                    if (ptimeValue != null) {
+                      offerCodec.parameters['ptime'] = ptimeValue;
+                      codecParameters['ptime'] = ptimeValue;
+                    }
+                    break;
+                  }
+
+                case 'audio/pcma':
+                  {
+                    // PCMA (G.711 A-law) - standard audio codec, 8kHz, 1 channel
+                    // Use PCMA-specific ptime if available, otherwise use general opusPtime
+                    final int? ptimeValue = pcmaPtime ?? opusPtime;
+                    if (ptimeValue != null) {
+                      offerCodec.parameters['ptime'] = ptimeValue;
+                      codecParameters['ptime'] = ptimeValue;
+                    }
+                    break;
+                  }
+
                 case 'video/vp8':
                 case 'video/vp9':
                 case 'video/h264':
@@ -1081,6 +1111,7 @@ class AnswerMediaSection extends MediaSection {
                     }
                     break;
                   }
+                }
               }
             }
 

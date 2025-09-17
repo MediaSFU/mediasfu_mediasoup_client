@@ -1,3 +1,11 @@
+## 0.0.9
+* **BREAKING:** Chrome M140+ WebRTC compatibility support in progress
+* **NEW:** Added PCMU (G.711 μ-law) and PCMA (G.711 A-law) audio codec support
+* **NEW:** Added `pcmuPtime` and `pcmaPtime` options to `ProducerCodecOptions` for G.711 codec configuration
+* **ENHANCED:** Improved SDP parameter handling for PCMU/PCMA codecs with proper ptime configuration
+* **ENHANCED:** Enhanced `CommonUtils.applyCodecParameters()` to support PCMU and PCMA audio codecs
+* **ENHANCED WORK IN PROGRESS:** Chrome M140+ parameter synchronization system with RTX apt parameter fixing
+
 ## 0.0.8
 * Added support for current WebRTC.
 

@@ -1,4 +1,4 @@
-library mediasfu_mediasoup_client;
+library;
 
 export 'package:mediasfu_mediasoup_client/src/consumer.dart';
 export 'package:mediasfu_mediasoup_client/src/data_consumer.dart';
