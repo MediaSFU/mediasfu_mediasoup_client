@@ -878,7 +878,7 @@ class Transport extends EnhancedEventEmitter {
 
       try {
         // This will fill rtpParameters's missing fields with default values.
-        Ortc.validateRtpParameters(sendResult.rtpParameters);
+        Ortc.validateAndNormalizeRtpParameters(sendResult.rtpParameters);
 
         String id = await safeEmitAsFuture('produce', {
           'kind': arguments.track.kind,
@@ -1125,7 +1125,7 @@ class Transport extends EnhancedEventEmitter {
           );
 
           // This will fill sctpStreamParameters's missing fields with default values.
-          Ortc.validateSctpStreamParameters(
+          Ortc.validateAndNormalizeSctpStreamParameters(
               sendDataResult.sctpStreamParameters);
 
           String id = await safeEmitAsFuture('producedata', {
@@ -1181,7 +1181,7 @@ class Transport extends EnhancedEventEmitter {
     }
 
     // This may throw.
-    Ortc.validateSctpStreamParameters(sctpStreamParameters);
+    Ortc.validateAndNormalizeSctpStreamParameters(sctpStreamParameters);
 
     // Enqueue command.
     _flexQueue.addTask(FlexTaskAdd(

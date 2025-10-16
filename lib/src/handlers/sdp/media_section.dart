@@ -1036,81 +1036,82 @@ class AnswerMediaSection extends MediaSection {
                       // }
 
                       // if (opusFec != null) {
-                    // offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
-                    offerCodec.parameters['useinbandfec'] = opusFec ?? 0;
-                    // codecParameters['useinbandfec'] = opusFec ? 1 : 0;
-                    codecParameters['useinbandfec'] = opusFec ?? 0;
-                    // }
+                      // offerCodec.parameters['useinbandfec'] = opusFec ? 1 : 0;
+                      offerCodec.parameters['useinbandfec'] = opusFec ?? 0;
+                      // codecParameters['useinbandfec'] = opusFec ? 1 : 0;
+                      codecParameters['useinbandfec'] = opusFec ?? 0;
+                      // }
 
-                    // if (opusDtx != null) {
-                    // offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
-                    offerCodec.parameters['usedtx'] = opusDtx ?? 0;
-                    // codecParameters['usedtx'] = opusDtx ? 1 : 0;
-                    codecParameters['usedtx'] = opusDtx ?? 0;
-                    // }
+                      // if (opusDtx != null) {
+                      // offerCodec.parameters['usedtx'] = opusDtx ? 1 : 0;
+                      offerCodec.parameters['usedtx'] = opusDtx ?? 0;
+                      // codecParameters['usedtx'] = opusDtx ? 1 : 0;
+                      codecParameters['usedtx'] = opusDtx ?? 0;
+                      // }
 
-                    if (opusMaxPlaybackRate != null) {
-                      codecParameters['maxplaybackrate'] = opusMaxPlaybackRate;
+                      if (opusMaxPlaybackRate != null) {
+                        codecParameters['maxplaybackrate'] =
+                            opusMaxPlaybackRate;
+                      }
+
+                      if (opusMaxAverageBitrate != null) {
+                        codecParameters['maxaveragebitrate'] =
+                            opusMaxAverageBitrate;
+                      }
+
+                      if (opusPtime != null) {
+                        offerCodec.parameters['ptime'] = opusPtime;
+                        codecParameters['ptime'] = opusPtime;
+                      }
+
+                      break;
                     }
 
-                    if (opusMaxAverageBitrate != null) {
-                      codecParameters['maxaveragebitrate'] =
-                          opusMaxAverageBitrate;
+                  case 'audio/pcmu':
+                    {
+                      // PCMU (G.711 μ-law) - standard audio codec, 8kHz, 1 channel
+                      // Use PCMU-specific ptime if available, otherwise use general opusPtime
+                      final int? ptimeValue = pcmuPtime ?? opusPtime;
+                      if (ptimeValue != null) {
+                        offerCodec.parameters['ptime'] = ptimeValue;
+                        codecParameters['ptime'] = ptimeValue;
+                      }
+                      break;
                     }
 
-                    if (opusPtime != null) {
-                      offerCodec.parameters['ptime'] = opusPtime;
-                      codecParameters['ptime'] = opusPtime;
+                  case 'audio/pcma':
+                    {
+                      // PCMA (G.711 A-law) - standard audio codec, 8kHz, 1 channel
+                      // Use PCMA-specific ptime if available, otherwise use general opusPtime
+                      final int? ptimeValue = pcmaPtime ?? opusPtime;
+                      if (ptimeValue != null) {
+                        offerCodec.parameters['ptime'] = ptimeValue;
+                        codecParameters['ptime'] = ptimeValue;
+                      }
+                      break;
                     }
 
-                    break;
-                  }
+                  case 'video/vp8':
+                  case 'video/vp9':
+                  case 'video/h264':
+                  case 'video/h265':
+                    {
+                      if (videoGoogleStartBitrate != null) {
+                        codecParameters['x-google-start-bitrate'] =
+                            videoGoogleStartBitrate;
+                      }
 
-                case 'audio/pcmu':
-                  {
-                    // PCMU (G.711 μ-law) - standard audio codec, 8kHz, 1 channel
-                    // Use PCMU-specific ptime if available, otherwise use general opusPtime
-                    final int? ptimeValue = pcmuPtime ?? opusPtime;
-                    if (ptimeValue != null) {
-                      offerCodec.parameters['ptime'] = ptimeValue;
-                      codecParameters['ptime'] = ptimeValue;
-                    }
-                    break;
-                  }
+                      if (videoGoogleMaxBitrate != null) {
+                        codecParameters['x-google-max-bitrate'] =
+                            videoGoogleMaxBitrate;
+                      }
 
-                case 'audio/pcma':
-                  {
-                    // PCMA (G.711 A-law) - standard audio codec, 8kHz, 1 channel
-                    // Use PCMA-specific ptime if available, otherwise use general opusPtime
-                    final int? ptimeValue = pcmaPtime ?? opusPtime;
-                    if (ptimeValue != null) {
-                      offerCodec.parameters['ptime'] = ptimeValue;
-                      codecParameters['ptime'] = ptimeValue;
+                      if (videoGoogleMinBitrate != null) {
+                        codecParameters['x-google-min-bitrate'] =
+                            videoGoogleMinBitrate;
+                      }
+                      break;
                     }
-                    break;
-                  }
-
-                case 'video/vp8':
-                case 'video/vp9':
-                case 'video/h264':
-                case 'video/h265':
-                  {
-                    if (videoGoogleStartBitrate != null) {
-                      codecParameters['x-google-start-bitrate'] =
-                          videoGoogleStartBitrate;
-                    }
-
-                    if (videoGoogleMaxBitrate != null) {
-                      codecParameters['x-google-max-bitrate'] =
-                          videoGoogleMaxBitrate;
-                    }
-
-                    if (videoGoogleMinBitrate != null) {
-                      codecParameters['x-google-min-bitrate'] =
-                          videoGoogleMinBitrate;
-                    }
-                    break;
-                  }
                 }
               }
             }

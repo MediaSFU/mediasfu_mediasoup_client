@@ -138,6 +138,8 @@ class PlanB extends HandlerInterface {
       RtpCapabilities nativeRtpCapabilities =
           CommonUtils.extractRtpCapabilities(sdpObject);
 
+      Ortc.validateAndNormalizeRtpCapabilities(nativeRtpCapabilities);
+
       return nativeRtpCapabilities;
     } catch (error) {
       try {

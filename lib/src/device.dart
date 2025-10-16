@@ -69,7 +69,7 @@ class Device {
       }
 
       // This may throw.
-      Ortc.validateRtpCapabilities(routerRtpCapabilities);
+      Ortc.validateAndNormalizeRtpCapabilities(routerRtpCapabilities);
 
       handler = HandlerInterface.handlerFactory();
 
@@ -80,7 +80,7 @@ class Device {
           .debug('load() | got native RTP capabilities:$nativeRtpCapabilities');
 
       // This may throw.
-      Ortc.validateRtpCapabilities(nativeRtpCapabilities);
+      Ortc.validateAndNormalizeRtpCapabilities(nativeRtpCapabilities);
 
       // Get extended RTP capabilities.
       _extendedRtpCapabilities = Ortc.getExtendedRtpCapabilities(
@@ -102,7 +102,7 @@ class Device {
           Ortc.getRecvRtpCapabilities(_extendedRtpCapabilities!);
 
       // This may throw.
-      Ortc.validateRtpCapabilities(_recvRtpCapabilities);
+      Ortc.validateAndNormalizeRtpCapabilities(_recvRtpCapabilities);
 
       _logger.debug(
           'load() | got receiving RTP capabilities:$_recvRtpCapabilities');

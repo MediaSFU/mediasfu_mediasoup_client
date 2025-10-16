@@ -14,7 +14,7 @@ class Ortc {
   /// Validates RtcpFeedback. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtcpFeedback(RtcpFeedback? fb) {
+  static void validateAndNormalizeRtcpFeedback(RtcpFeedback? fb) {
     if (fb == null) {
       throw ('fb is not an object');
     }
@@ -33,7 +33,8 @@ class Ortc {
   /// Validates RtpCodecCapability. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtpCodecCapability(RtpCodecCapability? codec) {
+  static void validateAndNormalizeRtpCodecCapability(
+      RtpCodecCapability? codec) {
     RegExp mimeTypeRegex = RegExp(r"^(audio|video)/(.+)", caseSensitive: true);
 
     if (codec == null) {
@@ -104,7 +105,7 @@ class Ortc {
       // }
 
       for (RtcpFeedback fb in codec.rtcpFeedback) {
-        validateRtcpFeedback(fb);
+        validateAndNormalizeRtcpFeedback(fb);
       }
     }
   }
@@ -112,7 +113,7 @@ class Ortc {
   /// Validates RtpHeaderExtension. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtpHeaderExtension(RtpHeaderExtension? ext) {
+  static void validateAndNormalizeRtpHeaderExtension(RtpHeaderExtension? ext) {
     if (ext == null) {
       throw ('ext is not an object');
     }
@@ -147,7 +148,7 @@ class Ortc {
   /// Validates RtpCapabilities. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtpCapabilities(RtpCapabilities? caps) {
+  static void validateAndNormalizeRtpCapabilities(RtpCapabilities? caps) {
     if (caps == null) {
       throw ('caps is not an object...');
     }
@@ -161,7 +162,7 @@ class Ortc {
     // }
 
     for (RtpCodecCapability codec in caps.codecs) {
-      validateRtpCodecCapability(codec);
+      validateAndNormalizeRtpCodecCapability(codec);
     }
 
     // // headerExtensions is optional. If unset, fill with an empty array.
@@ -174,7 +175,7 @@ class Ortc {
     // }
 
     for (RtpHeaderExtension ext in caps.headerExtensions) {
-      validateRtpHeaderExtension(ext);
+      validateAndNormalizeRtpHeaderExtension(ext);
     }
   }
 
@@ -222,7 +223,8 @@ class Ortc {
   /// Validates RtpEncodingParameters. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtpEncodingParameters(RtpEncodingParameters encoding) {
+  static void validateAndNormalizeRtpEncodingParameters(
+      RtpEncodingParameters encoding) {
     if (encoding.rtx != null) {
       if (encoding.rtx?.ssrc == null) {
         throw ('missing encoding.rtx.ssrc');
@@ -236,7 +238,7 @@ class Ortc {
   /// Validates RtcpParameters. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtcpParameters(RtcpParameters? rtcp) {
+  static void validateAndNormalizeRtcpParameters(RtcpParameters? rtcp) {
     if (rtcp == null) {
       throw ('rtcp is not an object');
     }
@@ -248,7 +250,8 @@ class Ortc {
   /// Validates RtpCodecParameters. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtpCodecParameters(RtpCodecParameters? codec) {
+  static void validateAndNormalizeRtpCodecParameters(
+      RtpCodecParameters? codec) {
     final RegExp mimeTypeRegex =
         RegExp(r"^(audio|video)/(.+)", caseSensitive: true);
 
@@ -315,21 +318,21 @@ class Ortc {
     // }
 
     for (RtcpFeedback fb in codec.rtcpFeedback) {
-      validateRtcpFeedback(fb);
+      validateAndNormalizeRtcpFeedback(fb);
     }
   }
 
   /// Validates RtpParameters. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateRtpParameters(RtpParameters params) {
+  static void validateAndNormalizeRtpParameters(RtpParameters params) {
     // // codecs is mandatory.
     // if (params.codecs == null) {
     //   throw ('missing params.codecs');
     // }
 
     for (RtpCodecParameters codec in params.codecs) {
-      validateRtpCodecParameters(codec);
+      validateAndNormalizeRtpCodecParameters(codec);
     }
 
     // // headerExtensions is optional. If unset, fill with an empty array.
@@ -347,13 +350,13 @@ class Ortc {
     // }
 
     for (RtpEncodingParameters encoding in params.encodings) {
-      validateRtpEncodingParameters(encoding);
+      validateAndNormalizeRtpEncodingParameters(encoding);
     }
 
     // rtcp is optional. If unset, fill with an empty object.
     params.rtcp ??= RtcpParameters(reducedSize: true, cname: '', mux: false);
 
-    validateRtcpParameters(params.rtcp);
+    validateAndNormalizeRtcpParameters(params.rtcp);
   }
 
   /// Validates NumSctpStreams. It may modify given data by adding missing
@@ -423,7 +426,8 @@ class Ortc {
   /// Validates SctpStreamParameters. It may modify given data by adding missing
   /// fields with default values.
   /// It throws if invalid.
-  static void validateSctpStreamParameters(SctpStreamParameters? params) {
+  static void validateAndNormalizeSctpStreamParameters(
+      SctpStreamParameters? params) {
     if (params == null) {
       throw ('params is not an object');
     }
@@ -704,7 +708,7 @@ class Ortc {
     videoRtpParameters = RtpParameters.copy(videoRtpParameters);
 
     // This may throw.
-    validateRtpParameters(videoRtpParameters);
+    validateAndNormalizeRtpParameters(videoRtpParameters);
 
     RtpParameters rtpParameters = RtpParameters(
       mid: RTP_PROBATOR_MID,
@@ -1005,7 +1009,7 @@ class Ortc {
     ExtendedRtpCapabilities? extendedRtpCapabilities,
   ) {
     // This may throw.
-    validateRtpParameters(rtpParameters);
+    validateAndNormalizeRtpParameters(rtpParameters);
 
     if (rtpParameters.codecs.isEmpty) {
       return false;
