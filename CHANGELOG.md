@@ -1,3 +1,7 @@
+## 0.1.1
+* **FIXED:** VP9 codec negotiation bug fix.
+* **ENHANCED:** Updated `flutter_webrtc` dependency.
+
 ## 0.1.0
 * **COMPLETED:** Chrome M140 WebRTC compatibility support for Video and Audio
 

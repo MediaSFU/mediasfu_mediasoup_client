@@ -186,8 +186,41 @@ class CommonUtils {
               break;
             }
           }
+        } else if (rtp.codec.toLowerCase() == 'vp9') {
+          // VP9 also has multiple profiles (profile-id=0, profile-id=2, etc.)
+          // We need to match by profile-id to get the correct variant
+          Fmtp? sdpFmtp;
+          try {
+            sdpFmtp = (mediaObject.fmtp ?? []).firstWhere(
+              (f) => f.payload == rtp.payload,
+            );
+          } catch (e) {
+            sdpFmtp = null;
+          }
+
+          if (sdpFmtp != null) {
+            Map<dynamic, dynamic> sdpParams = parseParams(sdpFmtp.config);
+            String? sdpProfileId = sdpParams['profile-id']?.toString();
+            String? codecProfileId = codec.parameters['profile-id']?.toString();
+
+            // Match by profile-id if both have it
+            if (sdpProfileId != null && codecProfileId != null) {
+              if (sdpProfileId == codecProfileId) {
+                matchingCodec = codec;
+                break;
+              }
+            } else {
+              // If no profile-id specified, accept the match (backward compatibility)
+              matchingCodec = codec;
+              break;
+            }
+          } else {
+            // No fmtp for this VP9, accept first match
+            matchingCodec = codec;
+            break;
+          }
         } else {
-          // For other codecs, mime type match is sufficient
+          // For other codecs (VP8, opus, etc.), mime type match is sufficient
           matchingCodec = codec;
           break;
         }
@@ -254,6 +287,29 @@ class CommonUtils {
                         !updated.mimeType.toLowerCase().endsWith('/rtx') &&
                         updated.parameters['profile-level-id'] ==
                             templateProfile,
+                  );
+                } else if (mainCodecMime.endsWith('/vp9')) {
+                  // VP9 also has profile-id variants
+                  String? templateProfileId =
+                      c.parameters['profile-id']?.toString();
+                  mainCodec = rtpParameters.codecs.firstWhere(
+                    (updated) {
+                      if (updated.mimeType.toLowerCase() != mainCodecMime ||
+                          updated.mimeType.toLowerCase().endsWith('/rtx')) {
+                        return false;
+                      }
+
+                      String? updatedProfileId =
+                          updated.parameters['profile-id']?.toString();
+
+                      // If both have profile-id, they must match
+                      if (templateProfileId != null &&
+                          updatedProfileId != null) {
+                        return templateProfileId == updatedProfileId;
+                      }
+                      // If neither has profile-id, accept the match
+                      return true;
+                    },
                   );
                 } else {
                   mainCodec = rtpParameters.codecs.firstWhere(

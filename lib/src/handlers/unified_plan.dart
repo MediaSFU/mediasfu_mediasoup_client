@@ -544,7 +544,13 @@ class UnifiedPlan extends HandlerInterface {
       ),
     );
 
-    RTCSessionDescription offer = await _pc!.createOffer({});
+    RTCSessionDescription offer;
+    try {
+      offer = await _pc!.createOffer({});
+    } catch (e) {
+      rethrow;
+    }
+
     SdpObject localSdpObject = SdpObject.fromMap(parse(offer.sdp!));
     MediaObject offerMediaObject;
 
@@ -752,6 +758,8 @@ class UnifiedPlan extends HandlerInterface {
     try {
       await _pc!.setRemoteDescription(answer);
     } catch (e) {
+      // Log the error for debugging
+
       // Fallback to capability-based recomputation if setRemoteDescription fails
       sendingRtpParameters = Ortc.getSendingRtpParameters(
           RTCRtpMediaTypeExtension.fromString(options.track.kind!),
@@ -772,9 +780,11 @@ class UnifiedPlan extends HandlerInterface {
       // This may throw.
       Ortc.validateAndNormalizeRtpParameters(sendingRtpParameters);
 
+      // CRITICAL: Use the same reuseMid to replace the existing media section, not add a new one
       _remoteSdp.send(
         offerMediaObject: offerMediaObject,
-        reuseMid: null,
+        reuseMid:
+            mediaSectionIdx.reuseMid ?? localId, // Use localId if no reuseMid
         offerRtpParameters: sendingRtpParameters,
         answerRtpParameters: sendingRemoteRtpParameters,
         codecOptions: options.codecOptions,
