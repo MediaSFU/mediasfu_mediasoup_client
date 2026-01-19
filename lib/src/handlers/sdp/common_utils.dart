@@ -232,133 +232,83 @@ class CommonUtils {
       }
     }
 
-    // Handle RTX codecs - update their apt and payload type from SDP
-    // The RTX apt must point to the actual main codec PT assigned by Chrome
+    // Build a map of main codec PT -> RTX PT from SDP
+    // This allows us to correctly find the RTX codec for any main codec
+    Map<int, int> mainPtToRtxPt = {};
+    for (Fmtp fmtp in mediaObject.fmtp ?? []) {
+      Map<dynamic, dynamic> params = parseParams(fmtp.config);
+      if (params.containsKey('apt')) {
+        int? apt = params['apt'];
+        if (apt != null) {
+          mainPtToRtxPt[apt] = fmtp.payload;
+        }
+      }
+    }
+
+    // Handle RTX codecs - update their apt and payload type based on the main codec PT
     for (RtpCodecParameters codec in rtpParameters.codecs) {
       if (codec.mimeType.toLowerCase().endsWith('/rtx')) {
         int? templateApt = codec.parameters['apt'];
 
         if (templateApt != null) {
-          // Find the main codec that this RTX is associated with
-          // The template apt points to the template PT of the main codec
-          // We need to find the actual PT that Chrome assigned to that main codec
-          RtpCodecParameters? mainCodec;
-          try {
-            // First, try to find by the template apt (before we updated PTs)
-            // This won't work because we already updated the PTs above
-            // So we need to search by the codec type that matches
+          // Find the main codec that this RTX is associated with in rtpParameters
+          // Look through template parameters to find which codec type had this PT
+          for (RtpCodecParameters templateCodec in templateParameters.codecs) {
+            if (templateCodec.payloadType == templateApt &&
+                !templateCodec.mimeType.toLowerCase().endsWith('/rtx')) {
+              // Found the template - now find matching codec in rtpParameters by mime type
+              String targetMime = templateCodec.mimeType.toLowerCase();
 
-            // Get the main codec type from template by finding which codec had this PT
-            for (RtpCodecParameters c in templateParameters.codecs) {
-              if (c.payloadType == templateApt &&
-                  !c.mimeType.toLowerCase().endsWith('/rtx')) {
-                // Found the template main codec - now find its match in updated params
-                String mainCodecMime = c.mimeType.toLowerCase();
-
-                // For H.264, match by profile AND packetization-mode
-                if (mainCodecMime.endsWith('/h264')) {
-                  String? templateProfile = c.parameters['profile-level-id'];
-                  String? templateMode =
-                      c.parameters['packetization-mode']?.toString() ?? '0';
-
-                  mainCodec = rtpParameters.codecs.firstWhere(
-                    (updated) {
-                      if (updated.mimeType.toLowerCase() != mainCodecMime ||
-                          updated.mimeType.toLowerCase().endsWith('/rtx')) {
-                        return false;
-                      }
-
-                      String? updatedProfile =
-                          updated.parameters['profile-level-id'];
-                      String? updatedMode = updated
-                              .parameters['packetization-mode']
-                              ?.toString() ??
-                          '0';
-
-                      return updatedProfile == templateProfile &&
-                          updatedMode == templateMode;
-                    },
-                  );
-                } else if (mainCodecMime.endsWith('/h265')) {
-                  String? templateProfile = c.parameters['profile-level-id'];
-                  mainCodec = rtpParameters.codecs.firstWhere(
-                    (updated) =>
-                        updated.mimeType.toLowerCase() == mainCodecMime &&
-                        !updated.mimeType.toLowerCase().endsWith('/rtx') &&
-                        updated.parameters['profile-level-id'] ==
-                            templateProfile,
-                  );
-                } else if (mainCodecMime.endsWith('/vp9')) {
-                  // VP9 also has profile-id variants
-                  String? templateProfileId =
-                      c.parameters['profile-id']?.toString();
-                  mainCodec = rtpParameters.codecs.firstWhere(
-                    (updated) {
-                      if (updated.mimeType.toLowerCase() != mainCodecMime ||
-                          updated.mimeType.toLowerCase().endsWith('/rtx')) {
-                        return false;
-                      }
-
-                      String? updatedProfileId =
-                          updated.parameters['profile-id']?.toString();
-
-                      // If both have profile-id, they must match
-                      if (templateProfileId != null &&
-                          updatedProfileId != null) {
-                        return templateProfileId == updatedProfileId;
-                      }
-                      // If neither has profile-id, accept the match
-                      return true;
-                    },
-                  );
-                } else {
-                  mainCodec = rtpParameters.codecs.firstWhere(
-                    (updated) =>
-                        updated.mimeType.toLowerCase() == mainCodecMime &&
-                        !updated.mimeType.toLowerCase().endsWith('/rtx'),
-                  );
-                }
-                break;
-              }
-            }
-          } catch (e) {
-            mainCodec = null;
-          }
-
-          if (mainCodec != null) {
-            // Update apt to point to the actual PT from Chrome
-            int oldApt = codec.parameters['apt'];
-            codec.parameters['apt'] = mainCodec.payloadType;
-
-            // Now find the RTX PT from Chrome's SDP that has apt pointing to this main codec
-            for (Rtp rtp in mediaObject.rtp ?? []) {
-              if (rtp.codec.toLowerCase() == 'rtx') {
-                Fmtp? rtxFmtp;
-                try {
-                  rtxFmtp = (mediaObject.fmtp ?? []).firstWhere(
-                    (f) => f.payload == rtp.payload,
-                  );
-                } catch (e) {
-                  rtxFmtp = null;
-                }
-
-                if (rtxFmtp != null) {
-                  Map<dynamic, dynamic> params = parseParams(rtxFmtp.config);
-                  int? sdpApt = params['apt'];
-
-                  // Match by the updated apt value
-                  if (sdpApt == mainCodec.payloadType) {
-                    codec.payloadType = rtp.payload;
-                    break;
+              RtpCodecParameters? mainCodec;
+              for (RtpCodecParameters rtpCodec in rtpParameters.codecs) {
+                if (rtpCodec.mimeType.toLowerCase() == targetMime &&
+                    !rtpCodec.mimeType.toLowerCase().endsWith('/rtx')) {
+                  // For VP9/H264/H265, also match by profile to distinguish variants
+                  if (targetMime == 'video/vp9') {
+                    String? templateProfile =
+                        templateCodec.parameters['profile-id']?.toString();
+                    String? rtpProfile =
+                        rtpCodec.parameters['profile-id']?.toString();
+                    if (templateProfile != null &&
+                        rtpProfile != null &&
+                        templateProfile != rtpProfile) {
+                      continue; // Profile mismatch, try next codec
+                    }
+                  } else if (targetMime == 'video/h264' ||
+                      targetMime == 'video/h265') {
+                    String? templateProfile = templateCodec
+                        .parameters['profile-level-id']
+                        ?.toString();
+                    String? rtpProfile =
+                        rtpCodec.parameters['profile-level-id']?.toString();
+                    if (templateProfile != null &&
+                        rtpProfile != null &&
+                        templateProfile.toLowerCase() !=
+                            rtpProfile.toLowerCase()) {
+                      continue; // Profile mismatch, try next codec
+                    }
                   }
+                  mainCodec = rtpCodec;
+                  break;
                 }
               }
+
+              if (mainCodec != null) {
+                // Update apt to point to the actual PT of the main codec
+                codec.parameters['apt'] = mainCodec.payloadType;
+
+                // Look up the RTX PT from SDP for this main codec PT
+                int? rtxPt = mainPtToRtxPt[mainCodec.payloadType];
+                if (rtxPt != null) {
+                  codec.payloadType = rtxPt;
+                }
+              }
+              break;
             }
           }
         }
       }
     }
-
     // Map of header extensions by URI to match with actual IDs
     Map<String, RtpHeaderExtensionParameters> extensionsByUri = {};
     for (RtpHeaderExtensionParameters ext in rtpParameters.headerExtensions) {

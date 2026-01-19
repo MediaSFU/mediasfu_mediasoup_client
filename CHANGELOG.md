@@ -1,3 +1,6 @@
+## 0.1.2
+* **FIXED:** VP9 codec negotiation bug fix for MacOS.
+
 ## 0.1.1
 * **FIXED:** VP9 codec negotiation bug fix.
 * **ENHANCED:** Updated `flutter_webrtc` dependency.

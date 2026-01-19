@@ -739,12 +739,26 @@ class Ortc {
   ) {
     List<RtpCodecParameters> filteredCodecs = [];
 
-    // if no capability codec is given, take the first one (and RTX).
+    // Helper function to find RTX codec for a given main codec by apt value
+    RtpCodecParameters? findRtxForCodec(RtpCodecParameters mainCodec) {
+      for (RtpCodecParameters codec in codecs) {
+        if (isRtxCodec(codec)) {
+          int? apt = codec.parameters['apt'];
+          if (apt != null && apt == mainCodec.payloadType) {
+            return codec;
+          }
+        }
+      }
+      return null;
+    }
+
+    // if no capability codec is given, take the first one (and its RTX).
     if (capCodec == null) {
       filteredCodecs.add(codecs.first);
 
-      if (codecs.length > 1 && isRtxCodec(codecs[1])) {
-        filteredCodecs.add(codecs[1]);
+      RtpCodecParameters? rtxCodec = findRtxForCodec(codecs.first);
+      if (rtxCodec != null) {
+        filteredCodecs.add(rtxCodec);
       }
     } else {
       // Otherwise look for a compatible set of codecs.
@@ -752,8 +766,10 @@ class Ortc {
         if (matchCodecs(aCodec: codecs[idx], bCodec: capCodec)) {
           filteredCodecs.add(codecs[idx]);
 
-          if (isRtxCodec(codecs[idx + 1])) {
-            filteredCodecs.add(codecs[idx + 1]);
+          // Find RTX codec by apt value, not by position
+          RtpCodecParameters? rtxCodec = findRtxForCodec(codecs[idx]);
+          if (rtxCodec != null) {
+            filteredCodecs.add(rtxCodec);
           }
 
           break;
