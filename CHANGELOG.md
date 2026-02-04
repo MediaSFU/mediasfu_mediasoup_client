@@ -1,5 +1,9 @@
+## 0.1.3
+* **FIXED:** `RtpEncodingParameters` type mismatch with `RTCRtpEncoding` base class for `priority` and `networkPriority` fields (#6)
+* **UPDATED:** Bumped `flutter_webrtc` dependency to `^1.3.0` for proper `RTCPriorityType` support
+
 ## 0.1.2
-* **FIXED:** VP9 codec negotiation bug fix for MacOS.
+* **FIXED:** VP9 codec negotiation bug fix; particularly for MacOS.
 
 ## 0.1.1
 * **FIXED:** VP9 codec negotiation bug fix.
