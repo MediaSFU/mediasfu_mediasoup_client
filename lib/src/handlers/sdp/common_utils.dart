@@ -87,9 +87,17 @@ class CommonUtils {
         if (ext.encryptUri != null && ext.encryptUri!.isNotEmpty) {
           continue;
         }
-        // Use URI as key to avoid duplicates across different media sections
+        // Key by kind+URI: the same URI legitimately appears in BOTH the
+        // audio and video sections (e.g. abs-send-time, transport-wide-cc,
+        // sdes:mid). Keying by URI alone made audio (parsed first) swallow
+        // the shared URIs, so video capabilities lacked transport-wide-cc —
+        // the ORTC matcher requires a kind+URI match, so video producers
+        // negotiated without TWCC and libwebrtc's delay-based bandwidth
+        // estimation was disabled for video. Upstream mediasoup-client
+        // (commonUtils.ts) keeps one entry per kind+URI.
         String? uri = ext.uri;
-        if (uri != null && !headerExtensionsMap.containsKey(uri)) {
+        String mapKey = '$kind|$uri';
+        if (uri != null && !headerExtensionsMap.containsKey(mapKey)) {
           RtpHeaderExtension headerExtension = RtpHeaderExtension(
             kind: RTCRtpMediaTypeExtension.fromString(kind),
             uri: uri,
@@ -97,7 +105,7 @@ class CommonUtils {
             // to assign it dynamically during negotiation
             preferredId: ext.value,
           );
-          headerExtensionsMap[uri] = headerExtension;
+          headerExtensionsMap[mapKey] = headerExtension;
         }
       }
     }
