@@ -1,18 +1,20 @@
-name: mediasfu_mediasoup_client
-description: "Mediasoup client for Flutter applications - Modified for MediaSFU Support"
-version: 0.1.2
+﻿name: mediasfu_mediasoup_client
+description: "Maintained mediasoup client for Flutter with current flutter_webrtc support, Unified Plan, simulcast, data channels, and a MediaSFU upgrade path."
+version: 0.1.4
 license: MIT
+homepage: https://www.mediasfu.com/
 repository: https://github.com/MediaSFU/mediasfu_mediasoup_client
-homepage: https://github.com/MediaSFU/mediasfu_mediasoup_client
+issue_tracker: https://github.com/MediaSFU/mediasfu_mediasoup_client/issues
+documentation: https://www.mediasfu.com/documentation
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
-  flutter: ">=1.17.0"
+  flutter: ">=1.22.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  flutter_webrtc: ^1.3.0
+  flutter_webrtc: ^1.5.2
   events2: ^1.0.0
   sdp_transform: ^0.3.2
   collection: ^1.16.0
@@ -59,3 +61,10 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+
+topics:
+  - webrtc
+  - mediasoup
+  - video-conferencing
+  - real-time
+  - media

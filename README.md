@@ -1,104 +1,182 @@
-<p align="center">
-  <img src="https://www.mediasfu.com/logo192.png" width="100" alt="MediaSFU Logo">
+﻿<p align="center">
+  <a href="https://www.mediasfu.com/">
+    <img src="https://www.mediasfu.com/logo192.png" width="88" alt="MediaSFU">
+  </a>
 </p>
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Flutter](https://img.shields.io/badge/Flutter-02569B?style=flat&logo=flutter&logoColor=white)](https://flutter.dev)
-[![Twitter](https://img.shields.io/badge/Twitter-@media__sfu-1DA1F2?logo=twitter&logoColor=white)](https://twitter.com/media_sfu)
-[![Forum](https://img.shields.io/badge/Community-Forum-5865F2?logo=discourse&logoColor=white)](https://www.mediasfu.com/forums)
-[![GitHub](https://img.shields.io/badge/GitHub-MediaSFU-181717?logo=github&logoColor=white)](https://github.com/MediaSFU)
-[![Website](https://img.shields.io/badge/Website-mediasfu.com-0A66C2?logo=google-chrome&logoColor=white)](https://www.mediasfu.com/)
-[![YouTube](https://img.shields.io/badge/YouTube-Channel-FF0000?logo=youtube&logoColor=white)](https://www.youtube.com/channel/UCELghZRPKMgjih5qrmXLtqw)
+<h1 align="center">MediaSFU mediasoup client for Flutter</h1>
 
----
+<p align="center">
+  A maintained, low-level mediasoup client for building custom real-time media experiences on Flutter.
+</p>
 
-## 🚨 **BREAKING: AI Phone Agents at $0.10 per 1,000 minutes**
+<p align="center">
+  <a href="https://pub.dev/packages/mediasfu_mediasoup_client"><img src="https://img.shields.io/pub/v/mediasfu_mediasoup_client?logo=dart" alt="Pub version"></a>
+  <a href="https://pub.dev/packages/mediasfu_mediasoup_client/score"><img src="https://img.shields.io/pub/points/mediasfu_mediasoup_client" alt="Pub points"></a>
+  <a href="https://github.com/MediaSFU/mediasfu_mediasoup_client/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-0f766e" alt="MIT license"></a>
+  <a href="https://github.com/MediaSFU/mediasfu_mediasoup_client"><img src="https://img.shields.io/github/stars/MediaSFU/mediasfu_mediasoup_client?style=flat" alt="GitHub stars"></a>
+</p>
 
-📞 **Call our live AI demos right now:**
-- 🇺🇸 **+1 (785) 369-1724** - Mixed Support Demo  
-- 🇬🇧 **+44 7445 146575** - AI Conversation Demo  
-- 🇨🇦 **+1 (587) 407-1990** - Technical Support Demo  
-- 🇨🇦 **+1 (647) 558-6650** - Friendly AI Chat Demo  
+Use mediasoup primitives such as `Device`, `Transport`, `Producer`, `Consumer`, `DataProducer`, and `DataConsumer` while keeping full control of your signaling and application UI. Version `0.1.4` is aligned with `flutter_webrtc ^1.5.2` and supports Unified Plan, simulcast, data channels, and Opus/PCMU/PCMA audio negotiation.
 
-**Traditional providers charge $0.05 per minute. We charge $0.10 per 1,000 minutes. That's 500x cheaper.**
+## Choose the right Flutter path
 
-✅ **Deploy AI phone agents in 30 minutes**  
-✅ **Works with ANY SIP provider** (Twilio, Telnyx, Zadarma, etc.)  
-✅ **Seamless AI-to-human handoffs**  
-✅ **Real-time call analytics & transcription**  
+| You need | Start with |
+| --- | --- |
+| Custom signaling, custom UI, and direct control of mediasoup transports | **This package** |
+| Complete rooms, signaling, participant state, and ready-to-use Flutter components | [`mediasfu_sdk`](https://pub.dev/packages/mediasfu_sdk) |
+| A self-hosted MediaSFU backend | [MediaSFU Open](https://github.com/MediaSFU/MediaSFUOpen) |
+| Managed recording, SIP/telephony, translation, AI notes, and production infrastructure | [MediaSFU](https://www.mediasfu.com/) |
 
-📖 **[Complete SIP/PSTN Documentation →](https://mediasfu.com/telephony)**
+## Install
 
----
+```sh
+flutter pub add mediasfu_mediasoup_client
+```
 
-# MediaSFU Mediasoup Client for Flutter
+```dart
+import 'package:mediasfu_mediasoup_client/mediasfu_mediasoup_client.dart';
+```
 
-**Enhanced WebRTC client with Chrome M140 compatibility and enterprise telephony integration**
+### Compatibility
 
-[![Built with MediaSFU](https://img.shields.io/badge/Built%20with-MediaSFU-blue)](https://mediasfu.com)
-[![Pub Version](https://img.shields.io/pub/v/mediasfu_mediasoup_client?color=blue&logo=dart)](https://pub.dev/packages/mediasfu_mediasoup_client)
+| Component | Supported baseline |
+| --- | --- |
+| Dart | `>=3.3.3 <4.0.0` |`r`n| Flutter | `>=1.22.0` |
+| Flutter WebRTC | `^1.5.2` |
+| Platforms | Android, iOS, Linux, macOS, Windows |
 
-This is a modified version of [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter) with enhanced WebRTC support, Chrome M140 compatibility, and comprehensive audio codec support including PCMU/PCMA for telephony integration.
+This package currently targets native Flutter platforms. For browser applications, use a MediaSFU web SDK or the JavaScript mediasoup client.
 
-## MediaSFU Ecosystem
+## How it fits together
 
-A unified real-time stack for telephony and multimodal agents with production SDKs across mobile and web.
+This library owns the **client-side WebRTC and mediasoup negotiation**. Your application still provides the signaling channel and a mediasoup-compatible server.
 
-- **Telephony agents and apps/SDKs:** VOIP reference suite → [github.com/MediaSFU/VOIP](https://github.com/MediaSFU/VOIP)
-- **Multimodal agents** (vision, audio, text) → [github.com/MediaSFU/Agents](https://github.com/MediaSFU/Agents)
-- **Agents workspace** (bring your own API keys) → [agents.mediasfu.com/playground](https://agents.mediasfu.com/playground)
-- **Agents workspace** (MediaSFU keys, limited) → [agentsmediasfu.com](https://agentsmediasfu.com)
+1. Request the router RTP capabilities from your server.
+2. Load a `Device` with those capabilities.
+3. Ask your server to create send and receive WebRTC transports.
+4. Create local transports from the server response.
+5. Exchange DTLS and producer parameters through your signaling channel.
+6. Produce local tracks and consume remote producers.
 
-### SDKs at a Glance
+## Integration skeleton
 
-- **React Native Expo:** [mediasfu-reactnative-expo](https://www.npmjs.com/package/mediasfu-reactnative-expo) • [GitHub](https://github.com/MediaSFU/MediaSFU-ReactNative-Expo)
-- **React Native CLI:** [mediasfu-reactnative](https://www.npmjs.com/package/mediasfu-reactnative) • [GitHub](https://github.com/MediaSFU/MediaSFU-ReactNative)
-- **Flutter:** [mediasfu_sdk](https://pub.dev/packages/mediasfu_sdk) • [GitHub](https://github.com/MediaSFU/MediaSFU_SDK_Flutter)
-- **React.js:** [mediasfu-reactjs](https://www.npmjs.com/package/mediasfu-reactjs) • [GitHub](https://github.com/MediaSFU/MediaSFU-ReactJS)
-- **Vue.js:** [mediasfu-vue](https://www.npmjs.com/package/mediasfu-vue) • [GitHub](https://github.com/MediaSFU/MediaSFU-Vue)
-- **Angular:** [mediasfu-angular](https://www.npmjs.com/package/mediasfu-angular) • [GitHub](https://github.com/MediaSFU/MediaSFU-Angular)
----
+The example below shows the key client flow. The `signaling` calls represent your WebSocket or HTTP implementation.
 
-## 🎵 Audio Codec Support
-- **Opus:** High-quality, variable bitrate codec for premium audio
-- **PCMU (G.711 μ-law):** Standard telephony codec for North America/Japan
-- **PCMA (G.711 A-law):** Standard telephony codec for Europe/World  
+```dart
+import 'package:mediasfu_mediasoup_client/mediasfu_mediasoup_client.dart';
 
-## 🛠️ Enhanced Features
-- ✅ **Chrome M140 Compatibility** - Full support for latest WebRTC changes
-- ✅ **PCMU/PCMA Audio Codecs** - G.711 support for telephony integration
-- ✅ **Enterprise-grade reliability** - Battle-tested in production environments
+final device = Device();
 
-## 🚀 Quick Start
+Future<Transport> createSendTransport(SignalingClient signaling) async {
+  final routerCapabilities = await signaling.getRouterRtpCapabilities();
 
----
+  await device.load(
+    routerRtpCapabilities: RtpCapabilities.fromMap(routerCapabilities),
+  );
 
-### 🚀 **Need to Build Fast?**
+  final transportOptions = await signaling.createWebRtcTransport(
+    direction: 'send',
+    sctpCapabilities: device.sctpCapabilities.toMap(),
+  );
 
-**Production-ready options:**
-- **[MediaSFU Flutter SDK](https://pub.dev/packages/mediasfu_sdk)** on pub.dev - Complete SDK with all features
-- **[MediaSFU Community Edition](https://github.com/MediaSFU/MediaSFUOpen)** - Open-source starting point
+  final transport = device.createSendTransportFromMap(transportOptions);
 
----
+  transport.on('connect', (data) async {
+    try {
+      await signaling.connectWebRtcTransport(
+        transportId: transport.id,
+        dtlsParameters: data['dtlsParameters'].toMap(),
+      );
+      data['callback']();
+    } catch (error) {
+      data['errback'](error);
+    }
+  });
 
-### 🔥 NEW: SIP/PSTN Integration
-Transform your Flutter apps with enterprise telephony:
-- **AI Phone Agents:** Deploy intelligent voice bots in minutes
-- **Universal SIP Support:** Works with any provider at 500x cost savings  
-- **WebRTC Bridge:** Seamlessly connect phone calls to your app
-- **Real-time Processing:** Live transcription, analytics, and automation
+  transport.on('produce', (data) async {
+    try {
+      final producerId = await signaling.produce(
+        transportId: transport.id,
+        kind: data['kind'],
+        rtpParameters: data['rtpParameters'].toMap(),
+        appData: data['appData'],
+      );
+      data['callback'](producerId);
+    } catch (error) {
+      data['errback'](error);
+    }
+  });
 
-📞 **Test it live:** Call any number above to experience our AI agents in action!
+  return transport;
+}
+```
 
-### ✅ Flutter SDK Setup Guide
-[![Watch the Flutter SDK Setup Guide](http://i.ytimg.com/vi/IzwVEMBQ3p0/hqdefault.jpg)](https://www.youtube.com/watch?v=IzwVEMBQ3p0)  
-🎥 [**Watch the Flutter SDK Setup Guide**](https://youtu.be/IzwVEMBQ3p0)
+After acquiring media with `navigator.mediaDevices.getUserMedia`, publish a track through the send transport:
 
----
+```dart
+final stream = await navigator.mediaDevices.getUserMedia({
+  'audio': true,
+  'video': true,
+});
+
+final videoTrack = stream.getVideoTracks().first;
+
+sendTransport.produce(
+  track: videoTrack,
+  stream: stream,
+  source: 'webcam',
+  appData: {'mediaTag': 'camera'},
+);
+```
+
+Use `producerCallback` when creating the send transport, or listen to `transport.observer`, to retain the resulting `Producer` in your application state.
+
+> The signaling method names above are illustrative. Your server contract determines endpoint names and response shapes. Transport data must include mediasoup `id`, `iceParameters`, `iceCandidates`, and `dtlsParameters`; SCTP parameters are optional.
+
+## Why this package
+
+- **Maintained WebRTC alignment:** tracks current `flutter_webrtc` APIs instead of leaving applications pinned to an old native WebRTC layer.
+- **Low-level control:** design your own signaling, state model, media controls, and interface.
+- **Media and data:** supports producers, consumers, SCTP data producers, and data consumers.
+- **Codec coverage:** includes Opus and G.711 PCMU/PCMA handling for real-time and telephony-oriented media flows.
+- **Clear growth path:** move to the full MediaSFU Flutter SDK when you no longer want to maintain room orchestration yourself.
+
+## From primitives to a complete product
+
+Building directly on mediasoup is ideal when the transport layer is part of your product differentiation. It also means your team owns signaling reliability, room lifecycle, reconnection, permissions, recording orchestration, and production operations.
+
+When you want those pieces already integrated, add the MediaSFU Flutter SDK:
+
+```sh
+flutter pub add mediasfu_sdk
+```
+
+The full SDK adds higher-level room workflows and components while connecting to the broader MediaSFU platform for recording, streaming, SIP/telephony, translation, AI features, and managed or self-hosted deployment options.
+
+- [MediaSFU Flutter SDK on pub.dev](https://pub.dev/packages/mediasfu_sdk)
+- [MediaSFU documentation](https://www.mediasfu.com/documentation)
+- [Interactive API sandbox](https://www.mediasfu.com/sandbox)
+- [Community forum](https://www.mediasfu.com/forums)
+
+## Upgrading `flutter_webrtc`
+
+WebRTC dependency updates can change native binaries and RTP types even when your Dart code is unchanged. When upgrading this package:
+
+1. Run `flutter clean` if an older native WebRTC artifact remains cached.
+2. Run `flutter pub get`.
+3. Rebuild each platform you ship; do not rely on hot reload for native dependency changes.
+4. Exercise camera, microphone, screen sharing, reconnect, and Bluetooth/audio-route flows on real devices.
+5. Verify server codec and RTP capability negotiation before rollout.
+
+## Contributing
+
+Issues and focused pull requests are welcome at [MediaSFU/mediasfu_mediasoup_client](https://github.com/MediaSFU/mediasfu_mediasoup_client). Include the Flutter version, platform, device and OS version, `flutter_webrtc` version, and a minimal reproduction for media negotiation issues.
 
 ## Credits
 
-- **Original Repository:** [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter)
-- **Modified and Maintained by:** [MediaSFU](https://www.mediasfu.com/)
+This package is based on [mediasoup-client-flutter](https://github.com/Blancduman/mediasoup-client-flutter) and is maintained by [MediaSFU](https://www.mediasfu.com/).
 
----
+## License
+
+MIT. See [LICENSE](https://github.com/MediaSFU/mediasfu_mediasoup_client/blob/main/LICENSE).
