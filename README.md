@@ -17,7 +17,7 @@
   <a href="https://github.com/MediaSFU/mediasfu_mediasoup_client"><img src="https://img.shields.io/github/stars/MediaSFU/mediasfu_mediasoup_client?style=flat" alt="GitHub stars"></a>
 </p>
 
-Use mediasoup primitives such as `Device`, `Transport`, `Producer`, `Consumer`, `DataProducer`, and `DataConsumer` while keeping full control of your signaling and application UI. Version `0.1.4` is aligned with `flutter_webrtc ^1.5.2` and supports Unified Plan, simulcast, data channels, and Opus/PCMU/PCMA audio negotiation.
+Use mediasoup primitives such as `Device`, `Transport`, `Producer`, `Consumer`, `DataProducer`, and `DataConsumer` while keeping full control of your signaling and application UI. Version `0.1.5` is aligned with `flutter_webrtc ^1.6.3` and supports Unified Plan, simulcast, data channels, and Opus/PCMU/PCMA audio negotiation.
 
 ## Choose the right Flutter path
 
@@ -42,8 +42,9 @@ import 'package:mediasfu_mediasoup_client/mediasfu_mediasoup_client.dart';
 
 | Component | Supported baseline |
 | --- | --- |
-| Dart | `>=3.3.3 <4.0.0` |`r`n| Flutter | `>=1.22.0` |
-| Flutter WebRTC | `^1.5.2` |
+| Dart | `>=3.3.3 <4.0.0` |
+| Flutter | `>=1.22.0` |
+| Flutter WebRTC | `^1.6.3` |
 | Platforms | Android, iOS, Linux, macOS, Windows |
 
 This package currently targets native Flutter platforms. For browser applications, use a MediaSFU web SDK or the JavaScript mediasoup client.

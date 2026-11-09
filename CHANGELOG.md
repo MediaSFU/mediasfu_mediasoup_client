@@ -1,4 +1,10 @@
-﻿## 0.1.4
+﻿## 0.1.5
+
+* Write all remote ICE candidates to SDP, including UDP and TCP candidates (#10).
+* Read the current mediasoup ICE candidate fields `address` and `protocol` while supporting legacy `ip` and `transport` inputs (#11).
+* Update `flutter_webrtc` to `^1.6.3`, `sdp_transform` to `^0.4.0`, and `h264_profile_level_id` to `^0.2.1`. Align the minimum `collection` version with `flutter_webrtc`.
+
+## 0.1.4
 
 * **UPDATED:** Bumped `flutter_webrtc` to `^1.5.2`, raised the Flutter baseline to `>=1.22.0`, and verified compatibility with its current RTP types.
 * **DOCUMENTED:** Added installation, compatibility, signaling, transport setup, upgrade guidance, and a clear path from low-level mediasoup primitives to the full MediaSFU Flutter SDK.
