@@ -713,9 +713,8 @@ class MediaObject {
   Map<String, dynamic> toMap() {
     Map<String, dynamic> result = <String, dynamic>{};
     if (candidates != null) {
-      result['candidates'] = [
-        candidates!.map((IceCandidate c) => c.toMap()).toList().first
-      ];
+      result['candidates'] =
+          candidates!.map((IceCandidate c) => c.toMap()).toList();
     }
     if (iceUfrag != null) {
       result['iceUfrag'] = iceUfrag;
