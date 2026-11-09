@@ -211,7 +211,8 @@ class IceCandidate {
       : component = data['component'] ?? 1,
         foundation = data['foundation'],
         // foundation = data['foundation'] is int ? data['foundation'] : data['foundation'].substring(0,3);
-        ip = data['ip'],
+        // mediasoup sends `address`; `ip` is the deprecated name.
+        ip = data['address'] ?? data['ip'],
         port = data['port'],
         priority = data['priority'],
         type = IceCandidateTypeExtension.fromString(data['type']),
@@ -221,7 +222,8 @@ class IceCandidate {
         tcpType = data['tcpType'] != null
             ? TcpTypeExtension.fromString(data['tcpType'])
             : null,
-        transport = data['transport'] ?? 'udp',
+        // mediasoup names the transport `protocol`.
+        transport = data['transport'] ?? data['protocol'] ?? 'udp',
         raddr = data['raddr'],
         rport = data['rport'],
         generation = data['generation'],
