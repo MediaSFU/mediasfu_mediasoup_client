@@ -41,8 +41,11 @@ class FlexTaskRemove extends FlexTask {
 }
 
 class FlexQueue {
+  final bool Function()? isClosed;
   bool isBusy = false;
   final List<FlexTask> taskQueue = [];
+
+  FlexQueue({this.isClosed});
 
   void addTask(FlexTask task) async {
     if (task is FlexTaskRemove) {
@@ -67,6 +70,9 @@ class FlexQueue {
         isBusy = true;
         final FlexTask task = taskQueue.removeAt(0);
         try {
+          if (isClosed?.call() ?? false) {
+            throw StateError('Transport is closed');
+          }
           if (task.argument == null) {
             final result = await task.execFun();
             task.callbackFun?.call(result);
