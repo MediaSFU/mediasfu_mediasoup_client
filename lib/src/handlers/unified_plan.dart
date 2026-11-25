@@ -216,6 +216,20 @@ class UnifiedPlan extends HandlerInterface {
 
     await _pc!.setRemoteDescription(offer);
 
+    // After the offer creates the receiver and before the answer, so a frame
+    // transformer is in place before any RTP.
+    final onRtpReceiver = options.onRtpReceiver;
+    if (onRtpReceiver != null) {
+      final RTCRtpTransceiver? offered = _firstWhereOrNull(
+        await _pc!.getTransceivers(),
+        (RTCRtpTransceiver t) => t.mid == localId,
+      );
+      if (offered == null) {
+        throw ('new RTCRtpTransceiver not found');
+      }
+      await onRtpReceiver(offered.receiver);
+    }
+
     RTCSessionDescription answer = await _pc!.createAnswer({});
 
     SdpObject localSdpObject = SdpObject.fromMap(parse(answer.sdp!));
@@ -565,6 +579,12 @@ class UnifiedPlan extends HandlerInterface {
         sendEncodings: options.encodings,
       ),
     );
+
+    // Before the offer, so a frame transformer is in place before any RTP.
+    final onRtpSender = options.onRtpSender;
+    if (onRtpSender != null) {
+      await onRtpSender(transceiver.sender);
+    }
 
     RTCSessionDescription offer;
     try {

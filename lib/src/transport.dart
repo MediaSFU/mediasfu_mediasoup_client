@@ -1,5 +1,7 @@
 // ignore_for_file: curly_braces_in_flow_control_structures, unnecessary_null_comparison, prefer_typing_uninitialized_variables, empty_catches
 
+import 'dart:async';
+
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasfu_mediasoup_client/src/consumer.dart';
 import 'package:mediasfu_mediasoup_client/src/data_consumer.dart';
@@ -32,6 +34,30 @@ extension ProtocolExtension on Protocol {
   String get value => values[this]!;
 }
 
+/// Called with the [RTCRtpSender] of a new Producer right after it is created
+/// and before SDP negotiation, so no RTP has been sent yet. The handler awaits
+/// the returned future before it negotiates.
+///
+/// Mirrors `ProducerOptions.onRtpSender` in mediasoup-client. Use it to attach
+/// a frame transformer (for example a `FrameCryptor` for end-to-end encryption)
+/// before the first frame leaves. It may be asynchronous because flutter_webrtc
+/// calls go through platform channels.
+///
+/// If it throws, the produce fails. The transceiver it was given stays in the
+/// peer connection without having been negotiated, so close the transport.
+typedef OnRtpSender = FutureOr<void> Function(RTCRtpSender rtpSender);
+
+/// Called with the [RTCRtpReceiver] of a new Consumer after the remote offer is
+/// applied and before the answer is created, so no RTP has been received yet.
+/// The handler awaits the returned future before it answers.
+///
+/// Mirrors `ConsumerOptions.onRtpReceiver` in mediasoup-client. Use it to
+/// attach a frame transformer before the first frame is decoded.
+///
+/// If it throws, the consume fails. The remote offer is already applied, so
+/// close the transport.
+typedef OnRtpReceiver = FutureOr<void> Function(RTCRtpReceiver rtpReceiver);
+
 class ProduceArguments {
   final MediaStreamTrack track;
   final MediaStream stream;
@@ -43,6 +69,7 @@ class ProduceArguments {
   final bool zeroRtpOnPause;
   final Map<String, dynamic> appData;
   final String source;
+  final OnRtpSender? onRtpSender;
 
   const ProduceArguments({
     required this.track,
@@ -55,6 +82,7 @@ class ProduceArguments {
     this.zeroRtpOnPause = false,
     this.appData = const <String, dynamic>{},
     required this.source,
+    this.onRtpSender,
   });
 }
 
@@ -66,6 +94,7 @@ class ConsumeArguments {
   final Map<String, dynamic> appData;
   final Function? accept;
   final String peerId;
+  final OnRtpReceiver? onRtpReceiver;
 
   const ConsumeArguments({
     required this.id,
@@ -75,6 +104,7 @@ class ConsumeArguments {
     required this.appData,
     this.accept,
     required this.peerId,
+    this.onRtpReceiver,
   });
 }
 
@@ -876,6 +906,7 @@ class Transport extends EnhancedEventEmitter {
         codecOptions: arguments.codecOptions,
         codec: arguments.codec,
         stream: arguments.stream,
+        onRtpSender: arguments.onRtpSender,
       ));
 
       try {
@@ -941,6 +972,7 @@ class Transport extends EnhancedEventEmitter {
     bool zeroRtpOnPause = false,
     Map<String, dynamic> appData = const <String, dynamic>{},
     required String source,
+    OnRtpSender? onRtpSender,
   }) {
     _logger.debug('produce() [track:${track.toString()}');
 
@@ -972,6 +1004,7 @@ class Transport extends EnhancedEventEmitter {
           zeroRtpOnPause: zeroRtpOnPause,
           appData: appData,
           source: source,
+          onRtpSender: onRtpSender,
         ),
       ),
     );
@@ -991,6 +1024,7 @@ class Transport extends EnhancedEventEmitter {
       trackId: arguments.id,
       kind: arguments.kind,
       rtpParameters: arguments.rtpParameters,
+      onRtpReceiver: arguments.onRtpReceiver,
     ));
 
     Consumer consumer = Consumer(
@@ -1048,6 +1082,7 @@ class Transport extends EnhancedEventEmitter {
     required RtpParameters rtpParameters,
     Map<String, dynamic> appData = const <String, dynamic>{},
     Function? accept,
+    OnRtpReceiver? onRtpReceiver,
   }) {
     _logger.debug('consume()');
 
@@ -1077,6 +1112,7 @@ class Transport extends EnhancedEventEmitter {
           appData: appData,
           accept: accept,
           peerId: peerId,
+          onRtpReceiver: onRtpReceiver,
         ),
       ),
     );

@@ -185,6 +185,12 @@ class PlanB extends HandlerInterface {
   Future<HandlerReceiveResult> receive(HandlerReceiveOptions options) async {
     _assertRecvDirection();
 
+    // Refused rather than ignored, for the same reason as in send().
+    if (options.onRtpReceiver != null) {
+      throw UnsupportedError(
+          'onRtpReceiver is not supported by the Plan B handler');
+    }
+
     _logger.debug(
         'receive() [trackId:${options.trackId}, kind:${RTCRtpMediaTypeExtension.value(options.kind)}]');
 
@@ -443,6 +449,13 @@ class PlanB extends HandlerInterface {
   @override
   Future<HandlerSendResult> send(HandlerSendOptions options) async {
     _assertSendRirection();
+
+    // Refused rather than ignored: a caller that attaches a frame transformer
+    // (end-to-end encryption) must not send in the clear by mistake.
+    if (options.onRtpSender != null) {
+      throw UnsupportedError(
+          'onRtpSender is not supported by the Plan B handler');
+    }
 
     _logger.debug(
         'send() [kind:${options.track.kind}, track.id:${options.track.id}]');
