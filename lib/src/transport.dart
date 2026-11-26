@@ -1,5 +1,7 @@
 // ignore_for_file: curly_braces_in_flow_control_structures, unnecessary_null_comparison, prefer_typing_uninitialized_variables, empty_catches
 
+import 'dart:async';
+
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:mediasfu_mediasoup_client/src/consumer.dart';
 import 'package:mediasfu_mediasoup_client/src/data_consumer.dart';
@@ -32,6 +34,29 @@ extension ProtocolExtension on Protocol {
   String get value => values[this]!;
 }
 
+/// Called with the [RTCRtpSender] of a new Producer right after it is created
+/// and before SDP negotiation, so no RTP has been sent yet. The handler awaits
+/// the returned future before it negotiates.
+///
+/// Mirrors `ProducerOptions.onRtpSender` in mediasoup-client. Use it to attach
+/// a frame transformer (for example a `FrameCryptor` for end-to-end encryption)
+/// before the first frame leaves. It may be asynchronous because flutter_webrtc
+/// calls go through platform channels.
+///
+/// Throw if transformer setup fails. [Transport.produce] closes the transport and emits
+/// 'rtpsetuperror'.
+typedef OnRtpSender = FutureOr<void> Function(RTCRtpSender rtpSender);
+
+/// Called with the [RTCRtpReceiver] of a new Consumer after the remote offer is
+/// applied. The handler awaits the returned future before it creates the answer.
+///
+/// Mirrors `ConsumerOptions.onRtpReceiver` in mediasoup-client. Use it to
+/// attach a frame transformer before the first frame is decoded.
+///
+/// Throw if transformer setup fails. [Transport.consume] closes the transport and emits
+/// 'rtpsetuperror'.
+typedef OnRtpReceiver = FutureOr<void> Function(RTCRtpReceiver rtpReceiver);
+
 class ProduceArguments {
   final MediaStreamTrack track;
   final MediaStream stream;
@@ -43,6 +68,7 @@ class ProduceArguments {
   final bool zeroRtpOnPause;
   final Map<String, dynamic> appData;
   final String source;
+  final OnRtpSender? onRtpSender;
 
   const ProduceArguments({
     required this.track,
@@ -55,6 +81,7 @@ class ProduceArguments {
     this.zeroRtpOnPause = false,
     this.appData = const <String, dynamic>{},
     required this.source,
+    this.onRtpSender,
   });
 }
 
@@ -66,6 +93,7 @@ class ConsumeArguments {
   final Map<String, dynamic> appData;
   final Function? accept;
   final String peerId;
+  final OnRtpReceiver? onRtpReceiver;
 
   const ConsumeArguments({
     required this.id,
@@ -75,6 +103,7 @@ class ConsumeArguments {
     required this.appData,
     this.accept,
     required this.peerId,
+    this.onRtpReceiver,
   });
 }
 
@@ -470,7 +499,7 @@ class Transport extends EnhancedEventEmitter {
   bool _probatorConsumerCreated = false;
 
   // FlexQueue instance to make async tasks happen sequentially.
-  final FlexQueue _flexQueue = FlexQueue();
+  late final FlexQueue _flexQueue = FlexQueue(isClosed: () => _closed);
 
   // Observer instance.
   final EnhancedEventEmitter _observer = EnhancedEventEmitter();
@@ -482,6 +511,7 @@ class Transport extends EnhancedEventEmitter {
 
   /// @emits connect - (transportLocalParameters: any, callback: Function, errback: Function)
   /// @emits connectionstatechange - (connectionState: ConnectionState)
+  /// @emits rtpsetuperror - ({error: Object, direction: Direction})
   /// @emits produce - (producerLocalParameters: any, callback: Function, errback: Function)
   /// @emits producedata - (dataProducerLocalParameters: any, callback: Function, errback: Function)
   Transport({
@@ -629,8 +659,6 @@ class Transport extends EnhancedEventEmitter {
     _logger.debug('close()');
 
     _closed = true;
-
-    //-TODO: close task handler.
 
     // Close the handler.
     await _handler.close();
@@ -825,6 +853,23 @@ class Transport extends EnhancedEventEmitter {
     });
   }
 
+  // A failed handler call can leave a sender attached or a remote offer
+  // pending. Finish closing the transport before the queue advances.
+  Future<T> _runWithRtpSetup<T>(
+    Future<T> Function() run, {
+    required bool hasHook,
+  }) async {
+    try {
+      return await run();
+    } catch (error) {
+      if (hasHook) {
+        await close();
+        safeEmit('rtpsetuperror', {'error': error, 'direction': _direction});
+      }
+      rethrow;
+    }
+  }
+
   Future<void> _produce(ProduceArguments arguments) async {
     try {
       List<RtpEncodingParameters> normalizedEncodings = [];
@@ -870,13 +915,18 @@ class Transport extends EnhancedEventEmitter {
         }).toList();
       }
 
-      HandlerSendResult sendResult = await _handler.send(HandlerSendOptions(
+      final sendOptions = HandlerSendOptions(
         track: arguments.track,
         encodings: normalizedEncodings,
         codecOptions: arguments.codecOptions,
         codec: arguments.codec,
         stream: arguments.stream,
-      ));
+        onRtpSender: arguments.onRtpSender,
+      );
+      final sendResult = await _runWithRtpSetup(
+        () => _handler.send(sendOptions),
+        hasHook: arguments.onRtpSender != null,
+      );
 
       try {
         // This will fill rtpParameters's missing fields with default values.
@@ -941,10 +991,13 @@ class Transport extends EnhancedEventEmitter {
     bool zeroRtpOnPause = false,
     Map<String, dynamic> appData = const <String, dynamic>{},
     required String source,
+    OnRtpSender? onRtpSender,
   }) {
     _logger.debug('produce() [track:${track.toString()}');
 
-    if (_direction != Direction.send) {
+    if (_closed) {
+      throw ('closed');
+    } else if (_direction != Direction.send) {
       throw ('not a sending Transport');
     } else if (track.kind == null ||
         !_canProduceByKind
@@ -972,6 +1025,7 @@ class Transport extends EnhancedEventEmitter {
           zeroRtpOnPause: zeroRtpOnPause,
           appData: appData,
           source: source,
+          onRtpSender: onRtpSender,
         ),
       ),
     );
@@ -986,12 +1040,16 @@ class Transport extends EnhancedEventEmitter {
       throw ('cannot consume this Producer');
     }
 
-    HandlerReceiveResult receiveResult =
-        await _handler.receive(HandlerReceiveOptions(
+    final receiveOptions = HandlerReceiveOptions(
       trackId: arguments.id,
       kind: arguments.kind,
       rtpParameters: arguments.rtpParameters,
-    ));
+      onRtpReceiver: arguments.onRtpReceiver,
+    );
+    final receiveResult = await _runWithRtpSetup(
+      () => _handler.receive(receiveOptions),
+      hasHook: arguments.onRtpReceiver != null,
+    );
 
     Consumer consumer = Consumer(
       id: arguments.id,
@@ -1048,6 +1106,7 @@ class Transport extends EnhancedEventEmitter {
     required RtpParameters rtpParameters,
     Map<String, dynamic> appData = const <String, dynamic>{},
     Function? accept,
+    OnRtpReceiver? onRtpReceiver,
   }) {
     _logger.debug('consume()');
 
@@ -1077,6 +1136,7 @@ class Transport extends EnhancedEventEmitter {
           appData: appData,
           accept: accept,
           peerId: peerId,
+          onRtpReceiver: onRtpReceiver,
         ),
       ),
     );
@@ -1095,7 +1155,9 @@ class Transport extends EnhancedEventEmitter {
   }) {
     _logger.debug('produceData()');
 
-    if (_direction != Direction.send) {
+    if (_closed) {
+      throw ('closed');
+    } else if (_direction != Direction.send) {
       throw ('not a sending Transport');
     } else if (_maxSctpMessageSize == null) {
       throw ('SCTP not enabled by remote Transport');

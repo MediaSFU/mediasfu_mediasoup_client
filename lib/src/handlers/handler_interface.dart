@@ -131,6 +131,7 @@ class HandlerSendOptions {
   final ProducerCodecOptions? codecOptions;
   final RtpCodecCapability? codec;
   final MediaStream stream;
+  final OnRtpSender? onRtpSender;
 
   const HandlerSendOptions({
     required this.track,
@@ -138,6 +139,7 @@ class HandlerSendOptions {
     this.codecOptions,
     this.codec,
     required this.stream,
+    this.onRtpSender,
   });
 }
 
@@ -169,11 +171,13 @@ class HandlerReceiveOptions {
   final String trackId;
   final RTCRtpMediaType kind;
   final RtpParameters rtpParameters;
+  final OnRtpReceiver? onRtpReceiver;
 
   HandlerReceiveOptions({
     required this.trackId,
     required this.kind,
     required this.rtpParameters,
+    this.onRtpReceiver,
   });
 }
 
